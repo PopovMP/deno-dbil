@@ -1,5 +1,6 @@
 {
   "imports": {
+    "@popov/file-writer": "jsr:@popov/file-writer@^1.1.3",
     "@popov/logger": "jsr:@popov/logger@^1.0.0"
   }
 }

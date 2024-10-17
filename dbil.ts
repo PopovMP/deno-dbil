@@ -1,18 +1,66 @@
 import { join } from "node:path";
-import { logError } from "@popov/logger";
+import { logError, logInfo } from "@popov/logger";
+import { writeText } from "@popov/file-writer";
 
-import type { DbTable, Doc, InsertOptions, Projection, Query } from "./def.ts";
+import type {
+  DbTable,
+  Doc,
+  InsertOptions,
+  ModifyOptions,
+  Projection,
+  Query,
+  Update,
+} from "./def.ts";
 
 import { dbQuery, dbQueryOne } from "./query.ts";
 import { dbInsert } from "./insert.ts";
 import { dbUpdate } from "./update.ts";
 import { dbProjection } from "./projection.ts";
 
+let dbDir = "";
 const dbHolder: Record<string, DbTable> = {};
 
-export class Dbil {
-  dbName: string;
+export function initDb(dir: string): void {
+  dbDir = dir;
+}
 
+/**
+ * Get the value of a key from the database.
+ */
+export function getDb(dbName: string): DBil {
+  if (dbDir === "") {
+    throw new Error("Database directory is not set");
+  }
+
+  if (!dbHolder[dbName]) {
+    const fileName = join(dbDir, dbName + ".json");
+
+    // Create the DB file if it doesn't exist
+    if (!Deno.statSync(fileName)) {
+      dbHolder[dbName] = {} as DbTable;
+      logInfo(`Database created: ${dbName}, Records: 0`, "DBil :: initDb");
+      return new DBil(dbName);
+    }
+
+    // Load the DB from the file
+    try {
+      const content = Deno.readTextFileSync(fileName);
+      const db: DbTable = dbHolder[dbName] = JSON.parse(content);
+      logInfo(
+        `Database loaded: ${dbName}, Records: ${Object.keys(db).length}`,
+        "DBil :: initDb",
+      );
+    } catch (err) {
+      logError((err as Error).message, "DBil :: getDB");
+      throw new Error("Database read failed");
+    }
+  }
+
+  return new DBil(dbName);
+}
+
+export class DBil {
+  dbName: string;
   docRef: DbTable;
 
   constructor(dbName: string) {
@@ -72,13 +120,14 @@ export class Dbil {
   }
 
   /**
-   * @method remove - Removes documents from the DB that match the query.
-   *                  Returns the number of removed documents.
-   * @param {any} query
-   * @param {ModifyOptions} [options={multi: false, skipSave: false}]
-   * @returns {number}
+   * Removes documents from the DB that match the query.
+   *
+   * Returns the number of removed documents.
    */
-  remove(query, options = { multi: false, skipSave: false }) {
+  remove(
+    query: Query,
+    options: ModifyOptions = { multi: false, skipSave: false },
+  ): number {
     const ids = dbQuery(this.docRef, query);
 
     if (ids.length === 0) {
@@ -102,14 +151,15 @@ export class Dbil {
   }
 
   /**
-   * @method update - Updates documents in the DB that match the query.
-   *                  Returns the number of updated documents.
-   * @param {any} query
-   * @param {Object} update
-   * @param {ModifyOptions} [options={multi: false, skipSave: false}]
-   * @returns {number}
+   * Updates documents in the DB that match the query.
+   *
+   * Returns the number of updated documents.
    */
-  update(query, update, options = { multi: false, skipSave: false }) {
+  update(
+    query: Query,
+    update: Update,
+    options: ModifyOptions = { multi: false, skipSave: false },
+  ): number {
     const ids = dbQuery(this.docRef, query);
     if (ids.length === 0) {
       return 0;
@@ -118,7 +168,7 @@ export class Dbil {
     if (ids.length > 1 && !options.multi) {
       logError(
         "Cannot update multiple docs without: {multi: true}",
-        "json-db :: update",
+        "DBil :: update",
       );
       return 0;
     }
@@ -136,11 +186,11 @@ export class Dbil {
   }
 
   /**
-   * @method save - Saves the DB to the file system.
-   * @returns {void}
+   * Saves the DB to the file system.
    */
-  save() {
+  save(): void {
     const content: string = JSON.stringify(this.docRef);
-    writeText(join(dbDir, this.dbName + ".json"), content);
+    const filename = join(dbDir, this.dbName + ".json");
+    writeText(filename, content);
   }
 }

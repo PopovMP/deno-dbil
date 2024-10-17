@@ -2,10 +2,9 @@ import {
   DbTable,
   Doc,
   EndValue,
-  ObjValue,
   Query,
-  QueryClouse,
-  QueryGroup,
+  type QueryClouse,
+  type QueryGroup,
   QueryOperator,
 } from "./def.ts";
 
@@ -77,14 +76,14 @@ function validateQuery(query: Query): boolean {
     const qType = Array.isArray(query)
       ? "array"
       : query === null
-        ? "null"
-        : typeof query;
+      ? "null"
+      : typeof query;
     logError(`The query is not an object. Given: ${qType}`, "query");
     return false;
   }
 
   for (const qName of Object.keys(query)) {
-    const qVal = query[qName];
+    const qVal = query[qName as keyof Query];
 
     switch (qName) {
       case "$and":
@@ -102,7 +101,7 @@ function validateQuery(query: Query): boolean {
         break;
 
       case "$not":
-        if (!validateQuery(qVal)) {
+        if (!validateQuery(qVal as Query)) {
           return false;
         }
         break;
@@ -120,8 +119,11 @@ function validateQuery(query: Query): boolean {
       default:
         if (
           typeof qVal === "object" &&
-          !Object.keys(qVal).every((opKey) =>
-            validateOperator(opKey, qVal[opKey])
+          !Object.keys(qVal as QueryOperator).every((opKey: string): boolean =>
+            validateOperator(
+              opKey as keyof QueryOperator,
+              qVal[opKey],
+            )
           )
         ) {
           return false;
@@ -134,13 +136,11 @@ function validateQuery(query: Query): boolean {
 
 /**
  * Validates a query operator syntax
- *
- * @param {string} opKey - query opKey
- * @param {any}    opVal - query operand
- *
- * @return {boolean}
  */
-function validateOperator(opKey, opVal) {
+function validateOperator(
+  opKey: keyof QueryOperator,
+  opVal: EndValue | EndValue[] | RegExp,
+): boolean {
   switch (opKey) {
     case "$exists":
       if (opVal !== true && opVal !== false && opVal !== 1 && opVal !== 0) {
@@ -211,16 +211,10 @@ function validateOperator(opKey, opVal) {
 
 /**
  * Evaluates a query against a doc
- *
- * @param {DBRecord} doc
- * @param {DBQuery} query
- *
- * @return {boolean}
  */
-function evalQuery(doc, query) {
+function evalQuery(doc: Doc, query: Query): boolean {
   for (const qName of Object.keys(query)) {
-    // @ts-ignore
-    const qVal = query[qName];
+    const qVal = query[qName as keyof Query];
 
     switch (qName) {
       case "$and": {
@@ -281,7 +275,7 @@ function evalOperatorSet(value: EndValue, opSet: QueryOperator): boolean {
       !evalOperator(
         value as keyof QueryOperator,
         key as keyof QueryOperator,
-        opSet[key],
+        opSet[key as keyof QueryOperator] as EndValue | EndValue[] | RegExp,
       )
     ) {
       return false;
@@ -297,34 +291,39 @@ function evalOperatorSet(value: EndValue, opSet: QueryOperator): boolean {
 function evalOperator(
   value: string | number,
   opKey: keyof QueryOperator,
-  opVal: any,
+  opVal: EndValue | EndValue[] | RegExp,
 ): boolean {
   switch (opKey) {
     case "$exists":
       return opVal ? value !== undefined : value === undefined;
     case "$lt":
-      return value < opVal;
+      return value < (opVal as string | number);
     case "$lte":
-      return value <= opVal;
+      return value <= (opVal as string | number);
     case "$gt":
-      return value > opVal;
+      return value > (opVal as string | number);
     case "$gte":
-      return value >= opVal;
+      return value >= (opVal as string | number);
     case "$in":
-      return opVal.includes(value);
+      return (opVal as EndValue[]).includes(value);
     case "$includes":
       return (typeof value === "string" || Array.isArray(value)) &&
-        value.includes(opVal);
+        value.includes(opVal as string);
     case "$nin":
-      return !opVal.includes(value);
+      return !(opVal as EndValue[]).includes(value);
     case "$eq":
       return value === opVal;
     case "$ne":
       return value !== opVal;
     case "$regex":
-      return opVal.exec(value);
-    case "$type":
-      return opVal === "array" ? Array.isArray(value) : typeof value === opVal;
+      return (opVal as RegExp).exec(value as string) !== null;
+    case "$type": {
+      if (opVal === "array") {
+        return Array.isArray(value);
+      }
+      return typeof value === opVal;
+    }
+
     default:
       return false;
   }

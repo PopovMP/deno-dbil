@@ -1,4 +1,4 @@
-import type { DbTable, Doc } from "./dbil.ts";
+import type { DbTable, Doc } from "./def.ts";
 import { logError } from "@popov/logger";
 
 /**
@@ -49,12 +49,8 @@ function insertDoc(db: DbTable, doc: Doc): string {
 
 /**
  * Makes a unique doc id.
- *
- * @param {any} db
- *
- * @return {string}
  */
-function makeId(db) {
+function makeId(db: DbTable): string {
   const id = uid(16);
 
   return db[id] === undefined ? id : makeId(db);

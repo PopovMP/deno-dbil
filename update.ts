@@ -1,5 +1,5 @@
 import { logError } from "@popov/logger";
-import type { Doc, Update } from "./def.ts";
+import type { Doc, EndValue, ObjValue, Update } from "./def.ts";
 
 /**
  * Updates a document
@@ -13,13 +13,15 @@ export function dbUpdate(doc: Doc, update: Update): number {
   let numUpdated = 0;
 
   for (const operator of Object.keys(update)) {
-    const operand: Record<string, string | number> = update[operator];
+    const operand = update[operator as keyof Update];
 
     switch (operator) {
       case "$inc":
-        for (const field of Object.keys(operand)) {
-          const delta = operand[field];
-
+        for (
+          const [field, delta] of Object.entries(
+            operand as Record<string, number>,
+          )
+        ) {
           if (typeof delta !== "number") {
             logError(
               `Cannot $inc with a non-numeric delta. Given: ${delta}`,
@@ -47,9 +49,13 @@ export function dbUpdate(doc: Doc, update: Update): number {
         break;
 
       case "$push":
-        for (const field of Object.keys(operand)) {
+        for (
+          const [field, value] of Object.entries(
+            operand as Record<string, EndValue>,
+          )
+        ) {
           if (doc[field] === undefined) {
-            doc[field] = [structuredClone(operand[field])];
+            doc[field] = [structuredClone(value)];
             numUpdated = 1;
             continue;
           }
@@ -62,15 +68,17 @@ export function dbUpdate(doc: Doc, update: Update): number {
             continue;
           }
 
-          doc[field].push(structuredClone(operand[field]));
+          doc[field].push(structuredClone(value));
           numUpdated = 1;
         }
         break;
 
       case "$rename":
-        for (const field of Object.keys(operand)) {
-          const newName = operand[field];
-
+        for (
+          const [field, newName] of Object.entries(
+            operand as Record<string, string>,
+          )
+        ) {
           if (field === "_id") {
             logError("Cannot $rename _id", "dbUpdate");
             continue;
@@ -101,25 +109,33 @@ export function dbUpdate(doc: Doc, update: Update): number {
         break;
 
       case "$set":
-        for (const field of Object.keys(operand)) {
+        for (
+          const [field, value] of Object.entries(
+            operand as Record<string, EndValue | EndValue[] | ObjValue>,
+          )
+        ) {
           if (field === "_id") {
             logError("Cannot $set _id", "dbUpdate");
             continue;
           }
 
-          doc[field] = structuredClone(operand[field]);
+          doc[field] = structuredClone(value);
           numUpdated = 1;
         }
         break;
 
       case "$unset":
-        for (const field of Object.keys(operand)) {
+        for (
+          const [field, flag] of Object.entries(
+            operand as Record<string, 0 | 1 | boolean>,
+          )
+        ) {
           if (field === "_id") {
             logError("Cannot $unset _id", "dbUpdate");
             continue;
           }
 
-          if (doc[field] !== undefined && operand[field]) {
+          if (doc[field] !== undefined && flag) {
             delete doc[field];
             numUpdated = 1;
           }

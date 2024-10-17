@@ -17,6 +17,7 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@popov/file-writer@^1.1.3",
       "jsr:@popov/logger@1"
     ]
   }
