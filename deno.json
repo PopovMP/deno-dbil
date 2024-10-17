@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@popov/logger": "jsr:@popov/logger@^1.0.0"
+  }
+}
