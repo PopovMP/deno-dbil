@@ -1,2 +1,2 @@
-export * from "./def.ts";
+export * from "./dbil.d.ts";
 export * from "./dbil.ts";

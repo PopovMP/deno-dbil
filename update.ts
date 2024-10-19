@@ -1,5 +1,5 @@
 import { logError } from "@popov/logger";
-import type { Doc, EndValue, Update, Value } from "./def.ts";
+import type { Doc, EndValue, Update, Value } from "./dbil.d.ts";
 
 /**
  * Updates a document

@@ -1,11 +1,11 @@
-import type { DbTable, Doc } from "./def.ts";
+import type { Doc, DocMap } from "./dbil.d.ts";
 import { logError } from "@popov/logger";
 
 /**
  * Inserts a doc in DB
  * Returns the id of the newly inserted document or an empty string.
  */
-export function dbInsert(db: DbTable, doc: Doc): string {
+export function dbInsert(docMap: DocMap, doc: Doc): string {
   if (typeof doc !== "object" || Array.isArray(doc) || doc === null) {
     logError(
       "The document being inserted is not an object.",
@@ -15,23 +15,23 @@ export function dbInsert(db: DbTable, doc: Doc): string {
   }
 
   return typeof doc._id === "string" && doc._id.length > 0
-    ? insertDocWithId(db, doc)
-    : insertDoc(db, doc);
+    ? insertDocWithId(docMap, doc)
+    : insertDoc(docMap, doc);
 }
 
 /**
  * Inserts a doc with an _id.
  * Returns the id of the newly inserted document or an empty string.
  */
-function insertDocWithId(db: DbTable, doc: Doc): string {
+function insertDocWithId(docMap: DocMap, doc: Doc): string {
   const id: string = doc._id as string;
 
-  if (db[id]) {
+  if (docMap[id]) {
     logError(`The _id is not unique. Given: ${id}`, "insertDocWithId");
     return "";
   }
 
-  db[id] = structuredClone(doc);
+  docMap[id] = structuredClone(doc);
 
   return id;
 }
@@ -39,11 +39,11 @@ function insertDocWithId(db: DbTable, doc: Doc): string {
 /**
  * Inserts a doc
  */
-function insertDoc(db: DbTable, doc: Doc): string {
-  const id = makeId(db);
+function insertDoc(docMap: DocMap, doc: Doc): string {
+  const id = makeId(docMap);
 
-  db[id] = structuredClone(doc);
-  db[id]._id = id;
+  docMap[id] = structuredClone(doc);
+  docMap[id]._id = id;
 
   return id;
 }
@@ -51,10 +51,10 @@ function insertDoc(db: DbTable, doc: Doc): string {
 /**
  * Makes a unique doc id.
  */
-function makeId(db: DbTable): string {
+function makeId(docMap: DocMap): string {
   const id = uid(16);
 
-  return db[id] === undefined ? id : makeId(db);
+  return docMap[id] === undefined ? id : makeId(docMap);
 }
 
 /**

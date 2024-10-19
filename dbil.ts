@@ -1,53 +1,89 @@
-import { join } from "node:path";
-import { logError, logInfo } from "@popov/logger";
+import { join } from "@std/path";
+
 import { writeText } from "@popov/file-writer";
+import { logError, logInfo } from "@popov/logger";
 
 import type {
-  DbTable,
+  DataBase,
+  DBOptions,
   Doc,
+  DocMap,
   InsertOptions,
   ModifyOptions,
   Projection,
   Query,
   Update,
-} from "./def.ts";
+} from "./dbil.d.ts";
 
 import { dbQuery, dbQueryOne } from "./query.ts";
 import { dbInsert } from "./insert.ts";
 import { dbUpdate } from "./update.ts";
 import { dbProjection } from "./projection.ts";
 
-let dbDir = "";
-const dbHolder: Record<string, DbTable> = {};
-
-export function initDb(dir: string): void {
-  dbDir = dir;
-}
+const dbHolder: Record<string, DataBase> = {};
 
 /**
- * Get the value of a key from the database.
+ * Gets a DB instance.
+ *
+ * It loads the DB file from the file system if it exists.
+ *
+ * If the DB file doesn't exist, it creates an empty DB.
+ *
+ * InMemory DBs are not saved to the file system.
  */
-export function getDb(dbName: string): DBil {
-  if (dbDir === "") {
-    throw new Error("Database directory is not set");
+export async function getDb(options: DBOptions): Promise<DBil> {
+  options.dirname = options?.dirname || Deno.cwd();
+  options.inMemory = options?.inMemory || false;
+
+  if (options.inMemory) {
+    if (!dbHolder[options.name]) {
+      dbHolder[options.name] = {
+        options,
+        docMap: {} as DocMap,
+      } as DataBase;
+    }
+    return new DBil(options.name);
   }
 
-  if (!dbHolder[dbName]) {
-    const fileName = join(dbDir, dbName + ".json");
+  if (!dbHolder[options.name]) {
+    const fileName = join(options.dirname, options.name + ".json");
 
-    // Create the DB file if it doesn't exist
-    if (!Deno.statSync(fileName)) {
-      dbHolder[dbName] = {} as DbTable;
-      logInfo(`Database created: ${dbName}, Records: 0`, "DBil :: initDb");
-      return new DBil(dbName);
+    // Check if the DB file exists
+    let isExists = false;
+    try {
+      const lStat = await Deno.lstat(fileName);
+      if (!lStat.isFile) {
+        logError("Database is not a file", "DBil :: initDb");
+        throw new Error("Database is not a file");
+      }
+      isExists = true;
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+        logError((err as Error).message, "DBil :: initDb");
+        throw err;
+      }
+    }
+
+    if (!isExists) {
+      dbHolder[options.name] = {
+        options,
+        docMap: {} as DocMap,
+      } as DataBase;
+
+      logInfo(
+        `Database created: ${options.name}, Records: 0`,
+        "DBil :: initDb",
+      );
+
+      return new DBil(options.name);
     }
 
     // Load the DB from the file
     try {
-      const content = Deno.readTextFileSync(fileName);
-      const db: DbTable = dbHolder[dbName] = JSON.parse(content);
+      const content = await Deno.readTextFile(fileName);
+      const db: DataBase = dbHolder[options.name] = JSON.parse(content);
       logInfo(
-        `Database loaded: ${dbName}, Records: ${Object.keys(db).length}`,
+        `Database loaded: ${options.name}, Records: ${Object.keys(db).length}`,
         "DBil :: initDb",
       );
     } catch (err) {
@@ -56,23 +92,23 @@ export function getDb(dbName: string): DBil {
     }
   }
 
-  return new DBil(dbName);
+  return new DBil(options.name);
 }
 
 export class DBil {
-  dbName: string;
-  docRef: DbTable;
+  options: DBOptions;
+  docMap: DocMap;
 
   constructor(dbName: string) {
-    this.dbName = dbName;
-    this.docRef = dbHolder[dbName];
+    this.options = dbHolder[dbName].options;
+    this.docMap = dbHolder[dbName].docMap;
   }
 
   /**
    * Counts the number of documents in the DB that match the query.
    */
   count(query: Query): number {
-    return dbQuery(this.docRef, query).length;
+    return dbQuery(this.docMap, query).length;
   }
 
   /**
@@ -81,10 +117,9 @@ export class DBil {
    * Returns an array of matched documents or an empty array.
    */
   find(query: Query, projection: Projection = {}): Doc[] {
-    return dbQuery(this.docRef, query)
-      .map((id: string): Doc =>
-        dbProjection(this.docRef[id], projection) as Doc
-      );
+    return dbQuery(this.docMap, query).map((id: string): Doc =>
+      dbProjection(this.docMap[id] as Doc, projection) as Doc
+    );
   }
 
   /**
@@ -93,10 +128,10 @@ export class DBil {
    * Returns the matched document or `undefined`.
    */
   findOne(query: Query, projection: Projection = {}): Doc | undefined {
-    const id: string | undefined = dbQueryOne(this.docRef, query);
+    const id: string | undefined = dbQueryOne(this.docMap, query);
     if (!id) return undefined;
 
-    const doc: Doc = this.docRef[id];
+    const doc: Doc = this.docMap[id] as Doc;
 
     return dbProjection(doc, projection);
   }
@@ -107,7 +142,7 @@ export class DBil {
    * Returns the id of the newly inserted document or an empty string.
    */
   insert(doc: Doc, options?: InsertOptions): string {
-    const id: string = dbInsert(this.docRef, doc);
+    const id: string = dbInsert(this.docMap, doc);
 
     if (id !== "" && !options?.skipSave) {
       this.save();
@@ -122,19 +157,22 @@ export class DBil {
    * Returns the number of removed documents.
    */
   remove(query: Query, options?: ModifyOptions): number {
-    const ids: string[] = dbQuery(this.docRef, query);
+    const ids: string[] = dbQuery(this.docMap, query);
 
     if (ids.length === 0) {
       return 0;
     }
 
     if (ids.length > 1 && !options?.multi) {
-      logError("Cannot remove multiple docs without: {multi: true}", "remove");
+      logError(
+        "Multiple docs selected for removal without {multi: true}",
+        "remove",
+      );
       return 0;
     }
 
     for (const id of ids) {
-      delete this.docRef[id];
+      delete this.docMap[id];
     }
 
     if (!options?.skipSave) {
@@ -150,7 +188,7 @@ export class DBil {
    * Returns the number of updated documents.
    */
   update(query: Query, update: Update, options: ModifyOptions): number {
-    const ids: string[] = dbQuery(this.docRef, query);
+    const ids: string[] = dbQuery(this.docMap, query);
     if (ids.length === 0) {
       return 0;
     }
@@ -165,7 +203,7 @@ export class DBil {
 
     let numUpdated = 0;
     for (const id of ids) {
-      numUpdated += dbUpdate(this.docRef[id], update);
+      numUpdated += dbUpdate(this.docMap[id] as Doc, update);
     }
 
     if (numUpdated > 0 && !options?.skipSave) {
@@ -179,8 +217,20 @@ export class DBil {
    * Saves the DB to the file system.
    */
   save(): void {
-    const content: string = JSON.stringify(this.docRef);
-    const filename = join(dbDir, this.dbName + ".json");
+    if (this.options.inMemory) {
+      return;
+    }
+
+    const filename = join(
+      this.options.dirname as string,
+      this.options.name + ".json",
+    );
+
+    const content = JSON.stringify({
+      options: this.options,
+      docMap: this.docMap,
+    });
+
     writeText(filename, content);
   }
 }

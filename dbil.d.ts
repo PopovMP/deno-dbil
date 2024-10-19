@@ -4,9 +4,10 @@ export type Value =
   | Record<string, EndValue | EndValue[] | Record<string, EndValue>>
   | EndValue[];
 
-export type Doc =
-  & { _id?: string }
-  & Record<string, Value>;
+export interface Doc {
+  _id?: string;
+  [property: string]: Value | undefined;
+}
 
 export interface QueryOperator {
   $exists?: boolean | 1 | 0;
@@ -36,7 +37,29 @@ export type Query = QueryClouse | QueryGroup;
 
 export type Projection = { _id?: 1 | 0 } & Record<string, 1 | 0>;
 
-export type DbTable = Record<string, Doc>;
+/**
+ * The database options.
+ *
+ * - `$dirname`: The directory name of the DB file.
+ *
+ * - `$name`: The name of the DB. The actual file name is `${$name}.json`.
+ *
+ * - `$inMemory`: A boolean that indicates if the DB is in-memory.
+ */
+export interface DBOptions {
+  dirname?: string;
+  name: string;
+  inMemory?: boolean;
+}
+
+export interface DocMap {
+  [id: string]: Doc;
+}
+
+export interface DataBase {
+  options: DBOptions;
+  docMap: DocMap;
+}
 
 export interface Update {
   $inc?: Record<string, number>;

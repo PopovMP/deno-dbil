@@ -1,4 +1,4 @@
-import type { Doc, Projection } from "./def.ts";
+import type { Doc, Projection } from "./dbil.d.ts";
 import { logError } from "@popov/logger";
 
 /**
@@ -41,7 +41,7 @@ export function dbProjection(
     return undefined;
   }
 
-  const output: Doc = {};
+  const output: Doc = {} as Doc;
 
   if (inclusiveKeysCount > 0) {
     for (const key of projKeys) {

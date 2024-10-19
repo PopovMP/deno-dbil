@@ -1,12 +1,12 @@
-import { DbTable, Doc, EndValue, Query, QueryOperator } from "./def.ts";
-import type { Value } from "./def.ts";
+import { Doc, EndValue, Query, QueryOperator } from "./dbil.d.ts";
+import type { DocMap, Value } from "./dbil.d.ts";
 import { logError } from "@popov/logger";
 
 /**
  * Matches query against DB and returns an array of the matched ids.
  * Returns an array of matched ids or an empty array
  */
-export function dbQuery(db: DbTable, query: Query): string[] {
+export function dbQuery(docMap: DocMap, query: Query): string[] {
   if (!validateQuery(query)) {
     return [];
   }
@@ -15,18 +15,18 @@ export function dbQuery(db: DbTable, query: Query): string[] {
 
   // Gets all _id if the query is empty
   if (queryKeys.length === 0) {
-    return Object.keys(db);
+    return Object.keys(docMap);
   }
 
   // Query a single doc by _id
   if (queryKeys.length === 1 && typeof query._id === "string") {
-    return db[query._id] ? [query._id] : [];
+    return docMap[query._id] ? [query._id] : [];
   }
 
   const ids: string[] = [];
 
-  for (const id of Object.keys(db)) {
-    if (evalQuery(db[id], query)) {
+  for (const id of Object.keys(docMap)) {
+    if (evalQuery(docMap[id], query)) {
       ids.push(id);
     }
   }
@@ -38,7 +38,7 @@ export function dbQuery(db: DbTable, query: Query): string[] {
  * Matches query against DB and returns the first match ID or an empty string.
  * Returns the _id of the selected doc or undefined
  */
-export function dbQueryOne(db: DbTable, query: Query): string | undefined {
+export function dbQueryOne(docMap: DocMap, query: Query): string | undefined {
   if (!validateQuery(query)) {
     return undefined;
   }
@@ -47,11 +47,11 @@ export function dbQueryOne(db: DbTable, query: Query): string | undefined {
 
   // Query a single doc by _id
   if (queryKeys.length === 1 && typeof query._id === "string") {
-    return db[query._id] ? query._id : undefined;
+    return docMap[query._id] ? query._id : undefined;
   }
 
-  for (const id of Object.keys(db)) {
-    if (evalQuery(db[id], query)) {
+  for (const id of Object.keys(docMap)) {
+    if (evalQuery(docMap[id], query)) {
       return id;
     }
   }
@@ -219,8 +219,13 @@ function evalQuery(doc: Doc, query: Query): boolean {
         break;
       }
       default: {
+        const value = doc[qName];
+        if (value === undefined) {
+          return false;
+        }
+
         if (typeof qVal === "object") {
-          if (!evalOperatorSet(doc[qName], qVal as QueryOperator)) {
+          if (!evalOperatorSet(doc[qName] as Value, qVal as QueryOperator)) {
             return false;
           }
         } else if (doc[qName] !== qVal) {
