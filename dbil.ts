@@ -187,7 +187,7 @@ export class DBil {
    *
    * Returns the number of updated documents.
    */
-  update(query: Query, update: Update, options: ModifyOptions): number {
+  update(query: Query, update: Update, options?: ModifyOptions): number {
     const ids: string[] = dbQuery(this.docMap, query);
     if (ids.length === 0) {
       return 0;
