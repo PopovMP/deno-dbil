@@ -104,15 +104,12 @@ export class DBil {
   /**
    * Inserts a document in the DB.
    *
-   * Returns the id of the newly inserted document or `undefined`.
+   * Returns the id of the newly inserted document or an empty string.
    */
-  insert(
-    doc: Doc,
-    options: InsertOptions = { skipSave: false },
-  ): string | undefined {
-    const id: string | undefined = dbInsert(this.docRef, doc);
+  insert(doc: Doc, options?: InsertOptions): string {
+    const id: string = dbInsert(this.docRef, doc);
 
-    if (id && !options.skipSave) {
+    if (id !== "" && !options?.skipSave) {
       this.save();
     }
 
@@ -124,17 +121,14 @@ export class DBil {
    *
    * Returns the number of removed documents.
    */
-  remove(
-    query: Query,
-    options: ModifyOptions = { multi: false, skipSave: false },
-  ): number {
-    const ids = dbQuery(this.docRef, query);
+  remove(query: Query, options?: ModifyOptions): number {
+    const ids: string[] = dbQuery(this.docRef, query);
 
     if (ids.length === 0) {
       return 0;
     }
 
-    if (ids.length > 1 && !options.multi) {
+    if (ids.length > 1 && !options?.multi) {
       logError("Cannot remove multiple docs without: {multi: true}", "remove");
       return 0;
     }
@@ -143,7 +137,7 @@ export class DBil {
       delete this.docRef[id];
     }
 
-    if (!options.skipSave) {
+    if (!options?.skipSave) {
       this.save();
     }
 
@@ -155,17 +149,13 @@ export class DBil {
    *
    * Returns the number of updated documents.
    */
-  update(
-    query: Query,
-    update: Update,
-    options: ModifyOptions = { multi: false, skipSave: false },
-  ): number {
-    const ids = dbQuery(this.docRef, query);
+  update(query: Query, update: Update, options: ModifyOptions): number {
+    const ids: string[] = dbQuery(this.docRef, query);
     if (ids.length === 0) {
       return 0;
     }
 
-    if (ids.length > 1 && !options.multi) {
+    if (ids.length > 1 && !options?.multi) {
       logError(
         "Cannot update multiple docs without: {multi: true}",
         "DBil :: update",
@@ -178,7 +168,7 @@ export class DBil {
       numUpdated += dbUpdate(this.docRef[id], update);
     }
 
-    if (numUpdated > 0 && !options.skipSave) {
+    if (numUpdated > 0 && !options?.skipSave) {
       this.save();
     }
 

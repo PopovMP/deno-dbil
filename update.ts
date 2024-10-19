@@ -1,5 +1,5 @@
 import { logError } from "@popov/logger";
-import type { Doc, EndValue, ObjValue, Update } from "./def.ts";
+import type { Doc, EndValue, Update, Value } from "./def.ts";
 
 /**
  * Updates a document
@@ -51,11 +51,11 @@ export function dbUpdate(doc: Doc, update: Update): number {
       case "$push":
         for (
           const [field, value] of Object.entries(
-            operand as Record<string, EndValue>,
+            operand as Record<string, Value>,
           )
         ) {
           if (doc[field] === undefined) {
-            doc[field] = [structuredClone(value)];
+            doc[field] = [structuredClone(value) as EndValue];
             numUpdated = 1;
             continue;
           }
@@ -68,7 +68,7 @@ export function dbUpdate(doc: Doc, update: Update): number {
             continue;
           }
 
-          doc[field].push(structuredClone(value));
+          doc[field].push(structuredClone(value) as EndValue);
           numUpdated = 1;
         }
         break;
@@ -111,7 +111,7 @@ export function dbUpdate(doc: Doc, update: Update): number {
       case "$set":
         for (
           const [field, value] of Object.entries(
-            operand as Record<string, EndValue | EndValue[] | ObjValue>,
+            operand as Record<string, Value>,
           )
         ) {
           if (field === "_id") {

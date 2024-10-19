@@ -1,13 +1,5 @@
-import {
-  DbTable,
-  Doc,
-  EndValue,
-  Query,
-  type QueryClouse,
-  type QueryGroup,
-  QueryOperator,
-} from "./def.ts";
-
+import { DbTable, Doc, EndValue, Query, QueryOperator } from "./def.ts";
+import type { Value } from "./def.ts";
 import { logError } from "@popov/logger";
 
 /**
@@ -95,7 +87,7 @@ function validateQuery(query: Query): boolean {
           );
           return false;
         }
-        if (!qVal.every((qry) => validateQuery(qry))) {
+        if (!qVal.every((qry) => validateQuery(qry as Query))) {
           return false;
         }
         break;
@@ -106,27 +98,13 @@ function validateQuery(query: Query): boolean {
         }
         break;
 
-      case "$where":
-        if (typeof qVal !== "function") {
-          logError(
-            `$where value is not a function. Given: ${typeof qVal}`,
-            "query",
-          );
-          return false;
-        }
-        break;
-
       default:
-        if (
-          typeof qVal === "object" &&
-          !Object.keys(qVal as QueryOperator).every((opKey: string): boolean =>
-            validateOperator(
-              opKey as keyof QueryOperator,
-              qVal[opKey],
-            )
-          )
-        ) {
-          return false;
+        if (typeof qVal === "object") {
+          for (const [opKey, opVal] of Object.entries(qVal as QueryOperator)) {
+            if (!validateOperator(opKey as keyof QueryOperator, opVal)) {
+              return false;
+            }
+          }
         }
     }
   }
@@ -139,7 +117,7 @@ function validateQuery(query: Query): boolean {
  */
 function validateOperator(
   opKey: keyof QueryOperator,
-  opVal: EndValue | EndValue[] | RegExp,
+  opVal: EndValue | EndValue[],
 ): boolean {
   switch (opKey) {
     case "$exists":
@@ -181,12 +159,8 @@ function validateOperator(
     case "$ne":
       break;
 
-    case "$regex":
-      if (!(opVal instanceof RegExp)) {
-        logError(
-          `${opKey} operand is not a RegExp. Given: ${typeof opVal}`,
-          "query",
-        );
+    case "$like":
+      if (typeof opVal !== "string") {
         return false;
       }
       break;
@@ -218,7 +192,7 @@ function evalQuery(doc: Doc, query: Query): boolean {
 
     switch (qName) {
       case "$and": {
-        for (const qRule of qVal) {
+        for (const qRule of qVal as Query[]) {
           if (!evalQuery(doc, qRule)) {
             return false;
           }
@@ -227,7 +201,7 @@ function evalQuery(doc: Doc, query: Query): boolean {
       }
       case "$or": {
         let isMatch = false;
-        for (const qRule of qVal) {
+        for (const qRule of qVal as Query[]) {
           if (evalQuery(doc, qRule)) {
             isMatch = true;
             break;
@@ -239,20 +213,14 @@ function evalQuery(doc: Doc, query: Query): boolean {
         break;
       }
       case "$not": {
-        if (evalQuery(doc, qVal)) {
-          return false;
-        }
-        break;
-      }
-      case "$where": {
-        if (!qVal(doc)) {
+        if (evalQuery(doc, qVal as Query)) {
           return false;
         }
         break;
       }
       default: {
         if (typeof qVal === "object") {
-          if (!evalOperatorSet(doc[qName], qVal)) {
+          if (!evalOperatorSet(doc[qName], qVal as QueryOperator)) {
             return false;
           }
         } else if (doc[qName] !== qVal) {
@@ -269,11 +237,11 @@ function evalQuery(doc: Doc, query: Query): boolean {
 /**
  * Evaluates an operator set against a doc's value
  */
-function evalOperatorSet(value: EndValue, opSet: QueryOperator): boolean {
+function evalOperatorSet(value: Value, opSet: QueryOperator): boolean {
   for (const key of Object.keys(opSet)) {
     if (
       !evalOperator(
-        value as keyof QueryOperator,
+        value,
         key as keyof QueryOperator,
         opSet[key as keyof QueryOperator] as EndValue | EndValue[] | RegExp,
       )
@@ -289,7 +257,7 @@ function evalOperatorSet(value: EndValue, opSet: QueryOperator): boolean {
  * Evaluates a query operator against a doc's value
  */
 function evalOperator(
-  value: string | number,
+  value: Value,
   opKey: keyof QueryOperator,
   opVal: EndValue | EndValue[] | RegExp,
 ): boolean {
@@ -297,31 +265,58 @@ function evalOperator(
     case "$exists":
       return opVal ? value !== undefined : value === undefined;
     case "$lt":
-      return value < (opVal as string | number);
+      if (
+        (typeof value === "string" && typeof opVal === "string") ||
+        (typeof value === "number" && typeof opVal === "number")
+      ) {
+        return value < opVal;
+      }
+      return false;
     case "$lte":
-      return value <= (opVal as string | number);
+      if (
+        (typeof value === "string" && typeof opVal === "string") ||
+        (typeof value === "number" && typeof opVal === "number")
+      ) {
+        return value <= opVal;
+      }
+      return false;
     case "$gt":
-      return value > (opVal as string | number);
+      if (
+        (typeof value === "string" && typeof opVal === "string") ||
+        (typeof value === "number" && typeof opVal === "number")
+      ) {
+        return value > opVal;
+      }
+      return false;
     case "$gte":
-      return value >= (opVal as string | number);
+      if (
+        (typeof value === "string" && typeof opVal === "string") ||
+        (typeof value === "number" && typeof opVal === "number")
+      ) {
+        return value >= opVal;
+      }
+      return false;
     case "$in":
-      return (opVal as EndValue[]).includes(value);
+      return (opVal as EndValue[]).includes(value as EndValue);
     case "$includes":
       return (typeof value === "string" || Array.isArray(value)) &&
         value.includes(opVal as string);
     case "$nin":
-      return !(opVal as EndValue[]).includes(value);
+      return !(opVal as EndValue[]).includes(value as EndValue);
     case "$eq":
       return value === opVal;
     case "$ne":
       return value !== opVal;
-    case "$regex":
-      return (opVal as RegExp).exec(value as string) !== null;
+    case "$like":
+      if (typeof opVal === "string" && typeof value === "string") {
+        return new RegExp(opVal, "i").test(value as string);
+      }
+      return false;
     case "$type": {
       if (opVal === "array") {
         return Array.isArray(value);
       }
-      return typeof value === opVal;
+      return (typeof value) === opVal;
     }
 
     default:

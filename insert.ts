@@ -3,15 +3,15 @@ import { logError } from "@popov/logger";
 
 /**
  * Inserts a doc in DB
- * Returns the id of the newly inserted document or `undefined`
+ * Returns the id of the newly inserted document or an empty string.
  */
-export function dbInsert(db: DbTable, doc: Doc): string | undefined {
+export function dbInsert(db: DbTable, doc: Doc): string {
   if (typeof doc !== "object" || Array.isArray(doc) || doc === null) {
     logError(
-      `The document being inserted is not an object. Given: ${doc}`,
+      "The document being inserted is not an object.",
       "dbInsert",
     );
-    return;
+    return "";
   }
 
   return typeof doc._id === "string" && doc._id.length > 0
@@ -20,14 +20,15 @@ export function dbInsert(db: DbTable, doc: Doc): string | undefined {
 }
 
 /**
- * Inserts a doc with an _id
+ * Inserts a doc with an _id.
+ * Returns the id of the newly inserted document or an empty string.
  */
-function insertDocWithId(db: DbTable, doc: Doc): string | undefined {
+function insertDocWithId(db: DbTable, doc: Doc): string {
   const id: string = doc._id as string;
 
   if (db[id]) {
     logError(`The _id is not unique. Given: ${id}`, "insertDocWithId");
-    return;
+    return "";
   }
 
   db[id] = structuredClone(doc);

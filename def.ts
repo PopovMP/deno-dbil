@@ -1,12 +1,12 @@
 export type EndValue = string | number | boolean | null;
-export type ObjValue = Record<
-  string,
-  EndValue | EndValue[] | Record<string, EndValue>
->;
+export type Value =
+  | EndValue
+  | Record<string, EndValue | EndValue[] | Record<string, EndValue>>
+  | EndValue[];
 
 export type Doc =
   & { _id?: string }
-  & Record<string, EndValue | EndValue[] | ObjValue>;
+  & Record<string, Value>;
 
 export interface QueryOperator {
   $exists?: boolean | 1 | 0;
@@ -16,20 +16,19 @@ export interface QueryOperator {
   $gte?: number | string;
   $lt?: number | string;
   $lte?: number | string;
-  $in?: EndValue[];
-  $nin?: EndValue[];
-  $includes?: EndValue;
-  $regex?: RegExp;
+  $in?: string[] | number[];
+  $nin?: string[] | number[];
+  $includes?: string | number;
+  $like?: string;
   $type?: string;
 }
 
-export type QueryClouse = Record<string, EndValue | QueryOperator>;
+export type QueryClouse = Record<string, Value | QueryOperator>;
 
 export interface QueryGroup {
   $and?: QueryClouse[];
   $or?: QueryClouse[];
   $not?: QueryClouse;
-  $where?: (doc: Doc) => boolean;
   _id?: string;
 }
 
@@ -41,9 +40,9 @@ export type DbTable = Record<string, Doc>;
 
 export interface Update {
   $inc?: Record<string, number>;
-  $push?: Record<string, EndValue>;
+  $push?: Record<string, Value>;
   $rename?: Record<string, string>;
-  $set?: Record<string, EndValue | EndValue[] | ObjValue>;
+  $set?: Record<string, Value>;
   $unset?: Record<string, 0 | 1 | boolean>;
 }
 
