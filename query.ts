@@ -23,15 +23,9 @@ export function dbQuery(docMap: DocMap, query: Query): string[] {
     return docMap[query._id] ? [query._id] : [];
   }
 
-  const ids: string[] = [];
-
-  for (const id of Object.keys(docMap)) {
-    if (evalQuery(docMap[id], query)) {
-      ids.push(id);
-    }
-  }
-
-  return ids;
+  return Object
+    .keys(docMap)
+    .filter((id: string): boolean => evalQuery(docMap[id], query));
 }
 
 /**
@@ -243,14 +237,8 @@ function evalQuery(doc: Doc, query: Query): boolean {
  * Evaluates an operator set against a doc's value
  */
 function evalOperatorSet(value: Value, opSet: QueryOperator): boolean {
-  for (const key of Object.keys(opSet)) {
-    if (
-      !evalOperator(
-        value,
-        key as keyof QueryOperator,
-        opSet[key as keyof QueryOperator] as EndValue | EndValue[] | RegExp,
-      )
-    ) {
+  for (const [opKey, opVal] of Object.entries(opSet)) {
+    if (!evalOperator(value, opKey, opVal)) {
       return false;
     }
   }
@@ -261,12 +249,8 @@ function evalOperatorSet(value: Value, opSet: QueryOperator): boolean {
 /**
  * Evaluates a query operator against a doc's value
  */
-function evalOperator(
-  value: Value,
-  opKey: keyof QueryOperator,
-  opVal: EndValue | EndValue[] | RegExp,
-): boolean {
-  switch (opKey) {
+function evalOperator(value: Value, opKey: string, opVal: Value): boolean {
+  switch (opKey as keyof QueryOperator) {
     case "$exists":
       return opVal ? value !== undefined : value === undefined;
     case "$lt":
@@ -304,8 +288,10 @@ function evalOperator(
     case "$in":
       return (opVal as EndValue[]).includes(value as EndValue);
     case "$includes":
-      return (typeof value === "string" || Array.isArray(value)) &&
-        value.includes(opVal as string);
+      if (typeof value === "string" || Array.isArray(value)) {
+        return value.includes(opVal as string);
+      }
+      return false;
     case "$nin":
       return !(opVal as EndValue[]).includes(value as EndValue);
     case "$eq":
