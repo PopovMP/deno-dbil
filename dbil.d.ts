@@ -1,8 +1,8 @@
-export type EndValue = string | number | boolean | null;
+export type EndValue = number | string | boolean | null;
 export type Value =
   | EndValue
-  | Record<string, EndValue | EndValue[] | Record<string, EndValue>>
-  | EndValue[];
+  | EndValue[]
+  | Record<string, EndValue | EndValue[] | Record<string, EndValue>>;
 
 export interface Doc {
   _id?: string;
@@ -21,7 +21,7 @@ export interface QueryOperator {
   $nin?: string[] | number[];
   $includes?: EndValue;
   $like?: string;
-  $type?: "number" | "string" | "boolean" | "array" | "null" | "object";
+  $type?: "number" | "string" | "boolean" | "null" | "array" | "object";
 }
 
 export interface Query {
