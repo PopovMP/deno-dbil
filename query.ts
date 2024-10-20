@@ -1,5 +1,12 @@
-import { Doc, EndValue, Query, QueryOperator } from "./dbil.d.ts";
-import type { DocMap, Value } from "./dbil.d.ts";
+import type {
+  Doc,
+  DocMap,
+  EndValue,
+  Query,
+  QueryOperator,
+  Value,
+} from "./dbil.d.ts";
+
 import { logError } from "@popov/logger";
 
 /**
@@ -25,7 +32,7 @@ export function dbQuery(docMap: DocMap, query: Query): string[] {
 
   return Object
     .keys(docMap)
-    .filter((id: string): boolean => evalQuery(docMap[id], query));
+    .filter((key: string): boolean => evalQuery(docMap[key], query));
 }
 
 /**
@@ -44,8 +51,9 @@ export function dbQueryOne(docMap: DocMap, query: Query): string | undefined {
     return docMap[query._id] ? query._id : undefined;
   }
 
-  for (const id of Object.keys(docMap)) {
-    if (evalQuery(docMap[id], query)) {
+  // Query all the docs and returns the first match
+  for (const [id, doc] of Object.entries(docMap)) {
+    if (evalQuery(doc, query)) {
       return id;
     }
   }

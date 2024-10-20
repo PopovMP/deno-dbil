@@ -53,13 +53,13 @@ export async function getDb(options: DBOptions): Promise<DBil> {
     try {
       const lStat = await Deno.lstat(fileName);
       if (!lStat.isFile) {
-        logError("Database is not a file", "DBil :: initDb");
+        logError("Database is not a file", "getDb");
         throw new Error("Database is not a file");
       }
       isExists = true;
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
-        logError((err as Error).message, "DBil :: initDb");
+        logError((err as Error).message, "getDb");
         throw err;
       }
     }
@@ -72,7 +72,7 @@ export async function getDb(options: DBOptions): Promise<DBil> {
 
       logInfo(
         `Database created: ${options.name}, Records: 0`,
-        "DBil :: initDb",
+        "getDb",
       );
 
       return new DBil(options.name);
@@ -84,10 +84,10 @@ export async function getDb(options: DBOptions): Promise<DBil> {
       const db: DataBase = dbHolder[options.name] = JSON.parse(content);
       logInfo(
         `Database loaded: ${options.name}, Records: ${Object.keys(db).length}`,
-        "DBil :: initDb",
+        "getDb",
       );
     } catch (err) {
-      logError((err as Error).message, "DBil :: getDB");
+      logError((err as Error).message, "getDB");
       throw new Error("Database read failed");
     }
   }
@@ -196,7 +196,7 @@ export class DBil {
     if (ids.length > 1 && !options?.multi) {
       logError(
         "Cannot update multiple docs without: {multi: true}",
-        "DBil :: update",
+        "update",
       );
       return 0;
     }
