@@ -25,7 +25,7 @@ export interface QueryOperator {
 }
 
 export interface Query {
-  _id?: string;
+  _id?: string | QueryOperator;
   [property: string]: Value | QueryOperator | undefined;
 }
 

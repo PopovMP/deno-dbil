@@ -166,7 +166,7 @@ export class DBil {
 
     if (ids.length > 1 && !options?.multi) {
       logError(
-        "Multiple docs selected for removal without {multi: true}",
+        "Multiple docs selected for removing without {multi: true}",
         "remove",
       );
       return 0;
@@ -196,7 +196,7 @@ export class DBil {
 
     if (ids.length > 1 && !options?.multi) {
       logError(
-        "Cannot update multiple docs without: {multi: true}",
+        "Multiple docs selected for updating without: {multi: true}",
         "update",
       );
       return 0;

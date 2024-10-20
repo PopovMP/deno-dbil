@@ -160,14 +160,12 @@ function validateOperator(
  */
 function evalQuery(doc: Doc, query: Query): boolean {
   for (const [qName, qVal] of Object.entries(query)) {
-    if (doc[qName] === undefined) {
-      return false;
-    }
+    const value: Value = doc[qName] as Value;
     if (typeof qVal === "object") {
-      if (!evalOperatorSet(doc[qName] as Value, qVal as QueryOperator)) {
+      if (!evalOperatorSet(value, qVal as QueryOperator)) {
         return false;
       }
-    } else if (doc[qName] !== qVal) {
+    } else if (value === undefined || value !== qVal) {
       return false;
     }
   }
