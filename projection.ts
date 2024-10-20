@@ -29,9 +29,12 @@ export function dbProjection(
     return structuredClone(doc);
   }
 
-  const inclusiveKeysCount: number = Object
+  const inclusiveKeysCount: number | undefined = Object
     .values(projection)
-    .reduce((sum: number, val: number): number => sum + (val ? 1 : 0), 0);
+    .reduce(
+      (sum: number, val: number | undefined): number => sum + (val ? 1 : 0),
+      0,
+    );
 
   if (inclusiveKeysCount > 0 && inclusiveKeysCount !== projKeys.length) {
     logError(

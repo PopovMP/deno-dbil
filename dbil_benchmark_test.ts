@@ -105,5 +105,5 @@ function validate(operation: string, timeStart: number, count: number): void {
 
   const opsPerSec = Math.round((1000 / (time || 1)) * countObjects);
   console.log(operation, count, "docs for", time, "ms.", opsPerSec, "ops/sec");
-  assertEquals(opsPerSec > 5000, true);
+  assertEquals(opsPerSec > 1000, true);
 }

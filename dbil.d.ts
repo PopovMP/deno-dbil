@@ -24,18 +24,15 @@ export interface QueryOperator {
   $type?: string;
 }
 
-export type QueryClouse = Record<string, Value | QueryOperator>;
-
-export interface QueryGroup {
-  $and?: QueryClouse[];
-  $or?: QueryClouse[];
-  $not?: QueryClouse;
+export interface Query {
   _id?: string;
+  [property: string]: Value | QueryOperator | undefined;
 }
 
-export type Query = QueryClouse | QueryGroup;
-
-export type Projection = { _id?: 1 | 0 } & Record<string, 1 | 0>;
+export interface Projection {
+  _id?: 1 | 0;
+  [propery: string]: 1 | 0 | undefined;
+}
 
 /**
  * The database options.
@@ -73,7 +70,12 @@ export interface InsertOptions {
   skipSave?: boolean;
 }
 
-export interface ModifyOptions {
+export interface UpdateOptions {
+  multi?: boolean;
+  skipSave?: boolean;
+}
+
+export interface RemoveOptions {
   multi?: boolean;
   skipSave?: boolean;
 }

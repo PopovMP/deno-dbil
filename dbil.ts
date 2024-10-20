@@ -9,10 +9,11 @@ import type {
   Doc,
   DocMap,
   InsertOptions,
-  ModifyOptions,
   Projection,
   Query,
+  RemoveOptions,
   Update,
+  UpdateOptions,
 } from "./dbil.d.ts";
 
 import { dbQuery, dbQueryOne } from "./query.ts";
@@ -156,7 +157,7 @@ export class DBil {
    *
    * Returns the number of removed documents.
    */
-  remove(query: Query, options?: ModifyOptions): number {
+  remove(query: Query, options?: RemoveOptions): number {
     const ids: string[] = dbQuery(this.docMap, query);
 
     if (ids.length === 0) {
@@ -187,7 +188,7 @@ export class DBil {
    *
    * Returns the number of updated documents.
    */
-  update(query: Query, update: Update, options?: ModifyOptions): number {
+  update(query: Query, update: Update, options?: UpdateOptions): number {
     const ids: string[] = dbQuery(this.docMap, query);
     if (ids.length === 0) {
       return 0;

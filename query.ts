@@ -67,47 +67,17 @@ export function dbQueryOne(docMap: DocMap, query: Query): string | undefined {
  */
 function validateQuery(query: Query): boolean {
   if (typeof query !== "object" || Array.isArray(query) || query === null) {
-    const qType = Array.isArray(query)
-      ? "array"
-      : query === null
-      ? "null"
-      : typeof query;
-    logError(`The query is not an object. Given: ${qType}`, "query");
+    logError(`The query is not an object.`, "query");
     return false;
   }
 
-  for (const qName of Object.keys(query)) {
-    const qVal = query[qName as keyof Query];
-
-    switch (qName) {
-      case "$and":
-      case "$or":
-        if (!Array.isArray(qVal)) {
-          logError(
-            `${qName} value is not an array. Given: ${typeof qVal}`,
-            "query",
-          );
+  for (const qVal of Object.values(query)) {
+    if (typeof qVal === "object") {
+      for (const [opKey, opVal] of Object.entries(qVal as QueryOperator)) {
+        if (!validateOperator(opKey as keyof QueryOperator, opVal)) {
           return false;
         }
-        if (!qVal.every((qry) => validateQuery(qry as Query))) {
-          return false;
-        }
-        break;
-
-      case "$not":
-        if (!validateQuery(qVal as Query)) {
-          return false;
-        }
-        break;
-
-      default:
-        if (typeof qVal === "object") {
-          for (const [opKey, opVal] of Object.entries(qVal as QueryOperator)) {
-            if (!validateOperator(opKey as keyof QueryOperator, opVal)) {
-              return false;
-            }
-          }
-        }
+      }
     }
   }
 
@@ -189,52 +159,16 @@ function validateOperator(
  * Evaluates a query against a doc
  */
 function evalQuery(doc: Doc, query: Query): boolean {
-  for (const qName of Object.keys(query)) {
-    const qVal = query[qName as keyof Query];
-
-    switch (qName) {
-      case "$and": {
-        for (const qRule of qVal as Query[]) {
-          if (!evalQuery(doc, qRule)) {
-            return false;
-          }
-        }
-        break;
+  for (const [qName, qVal] of Object.entries(query)) {
+    if (doc[qName] === undefined) {
+      return false;
+    }
+    if (typeof qVal === "object") {
+      if (!evalOperatorSet(doc[qName] as Value, qVal as QueryOperator)) {
+        return false;
       }
-      case "$or": {
-        let isMatch = false;
-        for (const qRule of qVal as Query[]) {
-          if (evalQuery(doc, qRule)) {
-            isMatch = true;
-            break;
-          }
-        }
-        if (!isMatch) {
-          return false;
-        }
-        break;
-      }
-      case "$not": {
-        if (evalQuery(doc, qVal as Query)) {
-          return false;
-        }
-        break;
-      }
-      default: {
-        const value = doc[qName];
-        if (value === undefined) {
-          return false;
-        }
-
-        if (typeof qVal === "object") {
-          if (!evalOperatorSet(doc[qName] as Value, qVal as QueryOperator)) {
-            return false;
-          }
-        } else if (doc[qName] !== qVal) {
-          return false;
-        }
-        break;
-      }
+    } else if (doc[qName] !== qVal) {
+      return false;
     }
   }
 
