@@ -252,6 +252,9 @@ function evalOperator(value: Value, opKey: string, opVal: Value): boolean {
       if (opVal === "array") {
         return Array.isArray(value);
       }
+      if (opVal === "null") {
+        return value === null;
+      }
       return (typeof value) === opVal;
     }
 

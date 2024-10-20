@@ -21,7 +21,7 @@ export interface QueryOperator {
   $nin?: string[] | number[];
   $includes?: EndValue;
   $like?: string;
-  $type?: string;
+  $type?: "number" | "string" | "boolean" | "array" | "null" | "object";
 }
 
 export interface Query {
