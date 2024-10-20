@@ -230,8 +230,11 @@ function evalOperator(value: Value, opKey: string, opVal: Value): boolean {
     case "$in":
       return (opVal as EndValue[]).includes(value as EndValue);
     case "$includes":
-      if (typeof value === "string" || Array.isArray(value)) {
+      if (typeof value === "string") {
         return value.includes(opVal as string);
+      }
+      if (Array.isArray(value)) {
+        return (value as EndValue[]).includes(opVal as EndValue);
       }
       return false;
     case "$nin":

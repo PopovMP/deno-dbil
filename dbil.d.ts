@@ -19,7 +19,7 @@ export interface QueryOperator {
   $lte?: number | string;
   $in?: string[] | number[];
   $nin?: string[] | number[];
-  $includes?: string | number;
+  $includes?: EndValue;
   $like?: string;
   $type?: string;
 }
