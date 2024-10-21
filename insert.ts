@@ -41,10 +41,8 @@ function insertDocWithId(docMap: DocMap, doc: Doc): string {
  */
 function insertDoc(docMap: DocMap, doc: Doc): string {
   const id = makeId(docMap);
-
   docMap[id] = structuredClone(doc);
   docMap[id]._id = id;
-
   return id;
 }
 
@@ -53,7 +51,6 @@ function insertDoc(docMap: DocMap, doc: Doc): string {
  */
 function makeId(docMap: DocMap): string {
   const id = uid(16);
-
   return docMap[id] === undefined ? id : makeId(docMap);
 }
 
