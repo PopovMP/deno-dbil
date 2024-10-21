@@ -1,4 +1,5 @@
-import { assertEquals } from "@std/assert";
+import { test } from "node:test";
+import { ok } from "node:assert";
 
 import type { DBil } from "./dbil.ts";
 import { getDb } from "./mod.ts";
@@ -9,7 +10,7 @@ const countObjects = 1000;
 
 preheatDb();
 
-Deno.test("insert", () => {
+test("insert", () => {
   const timeStart = Date.now();
   let count = 0;
 
@@ -20,7 +21,7 @@ Deno.test("insert", () => {
   validate("insert", timeStart, count);
 });
 
-Deno.test("find", () => {
+test("find", () => {
   const timeStart = Date.now();
   let count = 0;
 
@@ -31,7 +32,7 @@ Deno.test("find", () => {
   validate("find", timeStart, count);
 });
 
-Deno.test("findOne", () => {
+test("findOne", () => {
   const timeStart = Date.now();
   let count = 0;
 
@@ -42,7 +43,7 @@ Deno.test("findOne", () => {
   validate("findOne", timeStart, count);
 });
 
-Deno.test("findOne by _id", () => {
+test("findOne by _id", () => {
   const timeStart = Date.now();
   let count = 0;
 
@@ -55,7 +56,7 @@ Deno.test("findOne by _id", () => {
   validate("findOne by _id", timeStart, count);
 });
 
-Deno.test("update", () => {
+test("update", () => {
   const timeStart = Date.now();
   let count = 0;
 
@@ -66,7 +67,7 @@ Deno.test("update", () => {
   validate("update", timeStart, count);
 });
 
-Deno.test("remove", () => {
+test("remove", () => {
   const timeStart = Date.now();
   let count = 0;
 
@@ -105,5 +106,5 @@ function validate(operation: string, timeStart: number, count: number): void {
 
   const opsPerSec = Math.round((1000 / (time || 1)) * countObjects);
   console.log(operation, count, "docs for", time, "ms.", opsPerSec, "ops/sec");
-  assertEquals(opsPerSec > 1000, true);
+  ok(opsPerSec > 1000);
 }

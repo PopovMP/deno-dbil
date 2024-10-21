@@ -1,7 +1,8 @@
-import { join } from "@std/path";
-
 import { writeText } from "@popov/file-writer";
 import { logError, logInfo } from "@popov/logger";
+
+import { join } from "node:path";
+import { readFile, stat } from "node:fs/promises";
 
 import type {
   DataBase,
@@ -33,7 +34,7 @@ const dbHolder: Record<string, DataBase> = {};
  * InMemory DBs are not saved to the file system.
  */
 export async function getDb(options: DBOptions): Promise<DBil> {
-  options.dirname = options?.dirname || Deno.cwd();
+  options.dirname = options?.dirname || ".";
   options.inMemory = options?.inMemory || false;
 
   if (options.inMemory) {
@@ -52,8 +53,8 @@ export async function getDb(options: DBOptions): Promise<DBil> {
     // Check if the DB file exists
     let isExists = false;
     try {
-      const lStat = await Deno.lstat(fileName);
-      if (!lStat.isFile) {
+      const lStat = await stat(fileName);
+      if (!lStat.isFile()) {
         logError("Database is not a file", "getDb");
         throw new Error("Database is not a file");
       }
@@ -81,7 +82,7 @@ export async function getDb(options: DBOptions): Promise<DBil> {
 
     // Load the DB from the file
     try {
-      const content = await Deno.readTextFile(fileName);
+      const content = await readFile(fileName, { encoding: "utf-8" });
       const db: DataBase = dbHolder[options.name] = JSON.parse(content);
       logInfo(
         `Database loaded: ${options.name}, Records: ${Object.keys(db).length}`,

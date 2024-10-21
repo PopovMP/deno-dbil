@@ -1,4 +1,5 @@
-import { assertEquals } from "@std/assert";
+import { test } from "node:test";
+import { strictEqual } from "node:assert";
 
 import { dbQuery, dbQueryOne } from "./query.ts";
 import type { DocMap } from "./dbil.d.ts";
@@ -11,160 +12,160 @@ function getDocMap(): DocMap {
   } as DocMap;
 }
 
-Deno.test("dbQuery gets all _id if the query is empty", () => {
+test("dbQuery gets all _id if the query is empty", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, {});
-  assertEquals(ids.length, 3);
-  assertEquals(ids[0], "1");
+  strictEqual(ids.length, 3);
+  strictEqual(ids[0], "1");
 });
 
-Deno.test("dbQuery gets a single doc by _id", () => {
+test("dbQuery gets a single doc by _id", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { _id: "3" });
-  assertEquals(ids.length, 1);
-  assertEquals(ids[0], "3");
+  strictEqual(ids.length, 1);
+  strictEqual(ids[0], "3");
 });
 
-Deno.test("dbQueryOne gets first _id if the query is empty", () => {
+test("dbQueryOne gets first _id if the query is empty", () => {
   const docMap: DocMap = getDocMap();
   const id: string = dbQueryOne(docMap, {}) as string;
-  assertEquals(id, "1");
+  strictEqual(id, "1");
 });
 
-Deno.test("dbQueryOne gets a single doc by _id", () => {
+test("dbQueryOne gets a single doc by _id", () => {
   const docMap: DocMap = getDocMap();
   const id: string = dbQueryOne(docMap, { _id: "3" }) as string;
-  assertEquals(id, "3");
+  strictEqual(id, "3");
 });
 
-Deno.test("$exists when $exists: 1", () => {
+test("$exists when $exists: 1", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { val: { $exists: 1 } });
-  assertEquals(ids.length, 3);
+  strictEqual(ids.length, 3);
 });
 
-Deno.test("$exists when $exists: 0 and props", () => {
+test("$exists when $exists: 0 and props", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { val: { $exists: 0 } });
-  assertEquals(ids.length, 0);
+  strictEqual(ids.length, 0);
 });
 
-Deno.test("$exists when $exists: 0 and no props", () => {
+test("$exists when $exists: 0 and no props", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { foo: { $exists: 0 } });
-  assertEquals(ids.length, 3);
+  strictEqual(ids.length, 3);
 });
 
-Deno.test("$lt by string", () => {
+test("$lt by string", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { _id: { $lt: "3" } });
-  assertEquals(ids.length, 2);
+  strictEqual(ids.length, 2);
 });
 
-Deno.test("$lt by number", () => {
+test("$lt by number", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { val: { $lt: 3 } });
-  assertEquals(ids.length, 2);
+  strictEqual(ids.length, 2);
 });
 
-Deno.test("$lte by string", () => {
+test("$lte by string", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { _id: { $lte: "3" } });
-  assertEquals(ids.length, 3);
+  strictEqual(ids.length, 3);
 });
 
-Deno.test("$lte by number", () => {
+test("$lte by number", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { val: { $lte: 3 } });
-  assertEquals(ids.length, 3);
+  strictEqual(ids.length, 3);
 });
 
-Deno.test("$gt by string", () => {
+test("$gt by string", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { _id: { $gt: "1" } });
-  assertEquals(ids.length, 2);
+  strictEqual(ids.length, 2);
 });
 
-Deno.test("$gt by number", () => {
+test("$gt by number", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { val: { $gt: 1 } });
-  assertEquals(ids.length, 2);
+  strictEqual(ids.length, 2);
 });
 
-Deno.test("$gte by string", () => {
+test("$gte by string", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { _id: { $gte: "1" } });
-  assertEquals(ids.length, 3);
+  strictEqual(ids.length, 3);
 });
 
-Deno.test("$gte by number", () => {
+test("$gte by number", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { val: { $gte: 1 } });
-  assertEquals(ids.length, 3);
+  strictEqual(ids.length, 3);
 });
 
-Deno.test("$in", () => {
+test("$in", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { val: { "$in": [1, 2, 4] } });
-  assertEquals(ids.length, 2);
-  assertEquals(ids[0], "1");
-  assertEquals(ids[1], "2");
+  strictEqual(ids.length, 2);
+  strictEqual(ids[0], "1");
+  strictEqual(ids[1], "2");
 });
 
-Deno.test("$nin", () => {
+test("$nin", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { val: { "$nin": [1, 2, 4] } });
-  assertEquals(ids.length, 1);
-  assertEquals(ids[0], "3");
+  strictEqual(ids.length, 1);
+  strictEqual(ids[0], "3");
 });
 
-Deno.test("$includes string", () => {
+test("$includes string", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { name: { "$includes": "ba" } });
-  assertEquals(ids.length, 2);
-  assertEquals(ids[0], "2");
-  assertEquals(ids[1], "3");
+  strictEqual(ids.length, 2);
+  strictEqual(ids[0], "2");
+  strictEqual(ids[1], "3");
 });
 
-Deno.test("$includes array", () => {
+test("$includes array", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { vals: { "$includes": 2 } });
-  assertEquals(ids.length, 2);
-  assertEquals(ids[0], "2");
-  assertEquals(ids[1], "3");
+  strictEqual(ids.length, 2);
+  strictEqual(ids[0], "2");
+  strictEqual(ids[1], "3");
 });
 
-Deno.test("$eq", () => {
+test("$eq", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { val: { "$eq": 2 } });
-  assertEquals(ids.length, 1);
-  assertEquals(ids[0], "2");
+  strictEqual(ids.length, 1);
+  strictEqual(ids[0], "2");
 });
 
-Deno.test("$ne", () => {
+test("$ne", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { val: { "$ne": 2 } });
-  assertEquals(ids.length, 2);
-  assertEquals(ids[0], "1");
-  assertEquals(ids[1], "3");
+  strictEqual(ids.length, 2);
+  strictEqual(ids[0], "1");
+  strictEqual(ids[1], "3");
 });
 
-Deno.test("$like", () => {
+test("$like", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { name: { "$like": "Ba" } });
-  assertEquals(ids.length, 2);
-  assertEquals(ids[0], "2");
-  assertEquals(ids[1], "3");
+  strictEqual(ids.length, 2);
+  strictEqual(ids[0], "2");
+  strictEqual(ids[1], "3");
 });
 
-Deno.test("$type string", () => {
+test("$type string", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { name: { "$type": "string" } });
-  assertEquals(ids.length, 3);
+  strictEqual(ids.length, 3);
 });
 
-Deno.test("$type array", () => {
+test("$type array", () => {
   const docMap: DocMap = getDocMap();
   const ids: string[] = dbQuery(docMap, { vals: { "$type": "array" } });
-  assertEquals(ids.length, 3);
+  strictEqual(ids.length, 3);
 });
