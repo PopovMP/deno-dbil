@@ -11,8 +11,14 @@ export function dbUpdate(doc: Doc, update: Update): number {
   }
 
   let numUpdated = 0;
+  const operators: string[] = Object.keys(update);
 
-  for (const operator of Object.keys(update)) {
+  if (operators.length === 0) {
+    logError("The update has no operators", "dbUpdate");
+    return 0;
+  }
+
+  for (const operator of operators) {
     const operand = update[operator as keyof Update];
 
     switch (operator) {
@@ -104,7 +110,10 @@ export function dbUpdate(doc: Doc, update: Update): number {
             doc[newName] = structuredClone(doc[field]);
             delete doc[field];
             numUpdated = 1;
+            continue;
           }
+
+          logError(`Cannot $rename non-existing field: ${field}`, "dbUpdate");
         }
         break;
 
