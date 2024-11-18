@@ -4,32 +4,41 @@ import { deepStrictEqual, strictEqual } from "node:assert";
 import { getDb } from "./mod.ts";
 import type { Doc } from "./mod.ts";
 
-test("getDb sets deafult options", async () => {
-  const db = await getDb({ name: "example" });
-  deepStrictEqual(db.options, {
-    name: "example",
-    dirname: ".",
-    inMemory: false,
-  });
-});
-
 test("getDb sets the options", async () => {
-  const db = await getDb({ name: "foo1", dirname: "bar", inMemory: true });
+  const db = await getDb({
+    name: "foo1",
+    dirname: "bar",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   deepStrictEqual(db.options, {
     name: "foo1",
     dirname: "bar",
     inMemory: true,
+    createIfNotExists: true,
   });
 });
 
 test("getDb gets ref to the DB", async () => {
-  const db1 = await getDb({ name: "foo2", inMemory: true });
-  const db2 = await getDb({ name: "foo2", inMemory: true });
+  const db1 = await getDb({
+    name: "foo2",
+    inMemory: true,
+    createIfNotExists: true,
+  });
+  const db2 = await getDb({
+    name: "foo2",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   deepStrictEqual(db1, db2);
 });
 
 test("getDb count all docs", async () => {
-  const db = await getDb({ name: "foo3", inMemory: true });
+  const db = await getDb({
+    name: "foo3",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });
@@ -37,7 +46,11 @@ test("getDb count all docs", async () => {
 });
 
 test("getDb count some docs", async () => {
-  const db = await getDb({ name: "foo4", inMemory: true });
+  const db = await getDb({
+    name: "foo4",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });
@@ -45,7 +58,11 @@ test("getDb count some docs", async () => {
 });
 
 test("getDb find all docs", async () => {
-  const db = await getDb({ name: "foo5", inMemory: true });
+  const db = await getDb({
+    name: "foo5",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });
@@ -54,7 +71,11 @@ test("getDb find all docs", async () => {
 });
 
 test("getDb find some docs", async () => {
-  const db = await getDb({ name: "foo6", inMemory: true });
+  const db = await getDb({
+    name: "foo6",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });
@@ -63,7 +84,11 @@ test("getDb find some docs", async () => {
 });
 
 test("getDb findOne gets a doc", async () => {
-  const db = await getDb({ name: "foo7", inMemory: true });
+  const db = await getDb({
+    name: "foo7",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });
@@ -72,7 +97,11 @@ test("getDb findOne gets a doc", async () => {
 });
 
 test("getDb insers docs", async () => {
-  const db = await getDb({ name: "foo8", inMemory: true });
+  const db = await getDb({
+    name: "foo8",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });
@@ -81,7 +110,11 @@ test("getDb insers docs", async () => {
 });
 
 test("getDb remove one doc", async () => {
-  const db = await getDb({ name: "foo9", inMemory: true });
+  const db = await getDb({
+    name: "foo9",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });
@@ -90,7 +123,11 @@ test("getDb remove one doc", async () => {
 });
 
 test("getDb removes multy", async () => {
-  const db = await getDb({ name: "foo10", inMemory: true });
+  const db = await getDb({
+    name: "foo10",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });
@@ -99,7 +136,11 @@ test("getDb removes multy", async () => {
 });
 
 test("getDb does not remove multy", async () => {
-  const db = await getDb({ name: "foo11", inMemory: true });
+  const db = await getDb({
+    name: "foo11",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });
@@ -108,7 +149,11 @@ test("getDb does not remove multy", async () => {
 });
 
 test("getDb update one doc", async () => {
-  const db = await getDb({ name: "foo12", inMemory: true });
+  const db = await getDb({
+    name: "foo12",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });
@@ -118,7 +163,11 @@ test("getDb update one doc", async () => {
 });
 
 test("getDb updates multy", async () => {
-  const db = await getDb({ name: "foo13", inMemory: true });
+  const db = await getDb({
+    name: "foo13",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });
@@ -131,7 +180,11 @@ test("getDb updates multy", async () => {
 });
 
 test("getDb does not update multy", async () => {
-  const db = await getDb({ name: "foo14", inMemory: true });
+  const db = await getDb({
+    name: "foo14",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "foo" });
   db.insert({ name: "bar" });
   db.insert({ name: "baz" });

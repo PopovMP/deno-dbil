@@ -4,7 +4,11 @@ import { ok } from "node:assert";
 import type { DBil } from "./dbil.ts";
 import { getDb } from "./mod.ts";
 
-const db: DBil = await getDb({ name: "benchmark", inMemory: true });
+const db: DBil = await getDb({
+  name: "benchmark",
+  inMemory: true,
+  createIfNotExists: true,
+});
 
 const countObjects = 1000;
 

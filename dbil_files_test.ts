@@ -26,7 +26,11 @@ await unlinkDbFile();
 
 test("getDb creates a DB file", async () => {
   // If the file is missing, it gets an empty DB
-  const db = await getDb({ name: "example", dirname: dbDir });
+  const db = await getDb({
+    name: "example",
+    dirname: dbDir,
+    createIfNotExists: true,
+  });
 
   // It saves the DB to the file system on first modifying request
   db.insert({ name: "Alice" });
@@ -40,14 +44,22 @@ test("getDb creates a DB file", async () => {
 
 test("getDb loads a DB file", async () => {
   // If the file exists, it loads the DB
-  const db = await getDb({ name: "example", dirname: dbDir });
+  const db = await getDb({
+    name: "example",
+    dirname: dbDir,
+    createIfNotExists: true,
+  });
   strictEqual(db.find({ name: "Alice" }).length, 1);
 
   await unlinkDbFile();
 });
 
 test("getDb makes an inMemory DB", async () => {
-  const db = await getDb({ name: "memory", inMemory: true });
+  const db = await getDb({
+    name: "memory",
+    inMemory: true,
+    createIfNotExists: true,
+  });
   db.insert({ name: "Alice" });
   strictEqual(db.find({ name: "Alice" }).length, 1);
 

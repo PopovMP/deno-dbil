@@ -131,6 +131,7 @@ export interface GetDbOptions {
   dirname?: string;
   name: string;
   inMemory?: boolean;
+  createIfNotExists?: boolean;
 }
 
 /**

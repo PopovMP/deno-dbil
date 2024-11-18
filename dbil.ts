@@ -34,21 +34,31 @@ const dbHolder: Record<string, DataBase> = {};
  * InMemory DBs are not saved to the file system.
  */
 export async function getDb(options: GetDbOptions): Promise<DBil> {
+  // DB name is required
   if (!options.name) {
     logError("DB name is required", "getDb");
     throw new Error("DB name is required");
   }
 
-  options.dirname = options?.dirname || ".";
-  options.inMemory = options?.inMemory || false;
+  // DB name does not end with .json
+  if (options.name.endsWith(".json")) {
+    options.name = options.name.slice(0, -5);
+  }
 
   if (options.inMemory) {
+    // Cannot create an in-memory DB if a persisted DB exists
     if (dbHolder[options.name] && !dbHolder[options.name].options.inMemory) {
       logError("Persisted DB already exists", "getDb");
       throw new Error("Persisted DB already exists");
     }
 
+    // Create an in-memory DB
     if (!dbHolder[options.name]) {
+      if (!options.createIfNotExists) {
+        logError("Database does not exist", "getDb");
+        throw new Error("Database does not exist");
+      }
+
       dbHolder[options.name] = {
         options,
         docMap: {} as DocMap,
@@ -58,13 +68,15 @@ export async function getDb(options: GetDbOptions): Promise<DBil> {
     return new DBil(options.name);
   }
 
+  // Cannot create a persisted DB if an in-memory DB exists
   if (dbHolder[options.name] && dbHolder[options.name].options.inMemory) {
     logError("InMemory DB already exists", "getDb");
     throw new Error("InMemory DB already exists");
   }
 
   if (!dbHolder[options.name]) {
-    const fileName = join(options.dirname, options.name + ".json");
+    const dirname = options.dirname || ".";
+    const fileName = join(dirname, options.name + ".json");
 
     // Check if the DB file exists
     let isExists = false;
@@ -83,6 +95,11 @@ export async function getDb(options: GetDbOptions): Promise<DBil> {
     }
 
     if (!isExists) {
+      if (!options.createIfNotExists) {
+        logError("Database does not exist", "getDb");
+        throw new Error("Database does not exist");
+      }
+
       dbHolder[options.name] = {
         options,
         docMap: {} as DocMap,
@@ -240,7 +257,7 @@ export class DBil {
     }
 
     const filename = join(
-      this.options.dirname as string,
+      this.options.dirname || ".",
       this.options.name + ".json",
     );
 

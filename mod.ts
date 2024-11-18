@@ -1,5 +1,5 @@
 /**
- * Symple, embedded, in-memory, document-oriented database
+ * Symple, embedded, persisted or in-memory, document-oriented database
  *
  * Syntax similar to MongoDB.
  *
@@ -9,7 +9,7 @@
  * import { getDb } from "@popov/dbil";
  *
  * const dirname = Deno.cwd() + "/db";
- * const db = getDb({ name: "test", dirname });
+ * const db = getDb({ name: "test", dirname, createIfNotExists: true });
  * //=> 2024-10-20 04:40:17 [INFO] [getDb] Database created: test, Records: 0
  *
  * db.insert({ name: "John", age: 25 });
