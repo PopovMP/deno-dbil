@@ -6,9 +6,9 @@ import { readFile, stat } from "node:fs/promises";
 
 import type {
   DataBase,
-  DBOptions,
   Doc,
   DocMap,
+  GetDbOptions,
   InsertOptions,
   Projection,
   Query,
@@ -33,18 +33,34 @@ const dbHolder: Record<string, DataBase> = {};
  *
  * InMemory DBs are not saved to the file system.
  */
-export async function getDb(options: DBOptions): Promise<DBil> {
+export async function getDb(options: GetDbOptions): Promise<DBil> {
+  if (!options.name) {
+    logError("DB name is required", "getDb");
+    throw new Error("DB name is required");
+  }
+
   options.dirname = options?.dirname || ".";
   options.inMemory = options?.inMemory || false;
 
   if (options.inMemory) {
+    if (dbHolder[options.name] && !dbHolder[options.name].options.inMemory) {
+      logError("Persisted DB already exists", "getDb");
+      throw new Error("Persisted DB already exists");
+    }
+
     if (!dbHolder[options.name]) {
       dbHolder[options.name] = {
         options,
         docMap: {} as DocMap,
       } as DataBase;
     }
+
     return new DBil(options.name);
+  }
+
+  if (dbHolder[options.name] && dbHolder[options.name].options.inMemory) {
+    logError("InMemory DB already exists", "getDb");
+    throw new Error("InMemory DB already exists");
   }
 
   if (!dbHolder[options.name]) {
@@ -98,7 +114,7 @@ export async function getDb(options: DBOptions): Promise<DBil> {
 }
 
 export class DBil {
-  options: DBOptions;
+  options: GetDbOptions;
   docMap: DocMap;
 
   constructor(dbName: string) {

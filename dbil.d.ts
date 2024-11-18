@@ -127,7 +127,7 @@ export interface Projection {
  *
  * - `$inMemory`: A boolean that indicates if the DB is in-memory.
  */
-export interface DBOptions {
+export interface GetDbOptions {
   dirname?: string;
   name: string;
   inMemory?: boolean;
@@ -148,7 +148,7 @@ export interface DocMap {
  * - `docMap`: The map of documents in the database.
  */
 export interface DataBase {
-  options: DBOptions;
+  options: GetDbOptions;
   docMap: DocMap;
 }
 
