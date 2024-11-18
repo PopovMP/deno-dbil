@@ -34,6 +34,8 @@
  *
  * const countRemoved = db.remove({ name: "Allice" });
  * console.log(countRemoved); // 1
+ * 
+ * db.close();
  * ```
  *
  * @module dbil

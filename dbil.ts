@@ -268,4 +268,11 @@ export class DBil {
 
     writeText(filename, content);
   }
+
+  /**
+   * Closes the DB.
+   */
+  close(): void {
+    delete dbHolder[this.options.name];
+  }
 }
