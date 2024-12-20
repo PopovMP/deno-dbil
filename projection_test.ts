@@ -4,7 +4,7 @@ import { strictEqual } from "node:assert";
 import { dbProjection } from "./projection.ts";
 import type { Doc } from "./dbil.d.ts";
 
-test("dbProjection gets compelte doc given {}", () => {
+test("dbProjection gets complete doc given {}", () => {
   const doc: Doc = { _id: "1", val: 13, name: "Alice" };
 
   const res: Doc = dbProjection(doc, {}) as Doc;
@@ -14,7 +14,7 @@ test("dbProjection gets compelte doc given {}", () => {
   strictEqual(res.name, doc.name);
 });
 
-test("dbProjection gets compelte doc", () => {
+test("dbProjection gets complete doc", () => {
   const doc: Doc = { _id: "1", val: 13, name: "Alice" };
 
   const res: Doc = dbProjection(doc, { _id: 1, val: 1, name: 1 }) as Doc;

@@ -1,9 +1,9 @@
 /**
- * Symple, embedded, persisted or in-memory, document-oriented database
+ * Simple, embedded, persisted or in-memory, document-oriented database
  *
  * Syntax similar to MongoDB.
  *
- * Exmaple:
+ * Example:
  *
  * ```typescript
  * import { getDb } from "@popov/dbil";
@@ -15,7 +15,7 @@
  * db.insert({ name: "John", age: 25 });
  * // Creates a file: ./db/test.json
  *
- * db.insert({ name: "Allice", age: 19 });
+ * db.insert({ name: "Alice", age: 19 });
  *
  * const docs = db.find({ age: {$gt: 20} });
  *
@@ -23,16 +23,16 @@
  * console.log(docs[0]);
  * //=> { _id: "e443a7cc23bb23b8", name: "John", age: 25 }
  *
- * db.update({ name: "Allice" }, { $set: { age: 21 } });
+ * db.update({ name: "Alice" }, { $set: { age: 21 } });
  *
- * const doc = db.findOne({ name: "Allice" }, { name: 1, age: 1 });
+ * const doc = db.findOne({ name: "Alice" }, { name: 1, age: 1 });
  * console.log(doc);
- * //=> { name: "Allice", age: 21 }
+ * //=> { name: "Alice", age: 21 }
  *
  * const count = db.count({ age: {$gt: 20} });
  * console.log(count); //=> 2
  *
- * const countRemoved = db.remove({ name: "Allice" });
+ * const countRemoved = db.remove({ name: "Alice" });
  * console.log(countRemoved); // 1
  *
  * db.close();

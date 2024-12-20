@@ -25,13 +25,13 @@ test("dbUpdate - update cannot be an array", () => {
   strictEqual(numUpdated, 0);
 });
 
-test("dbUpdate - update without oparator", () => {
+test("dbUpdate - update without operator", () => {
   const doc: Doc = { _id: "1", val: 1 };
   const numUpdated = dbUpdate(doc, {});
   strictEqual(numUpdated, 0);
 });
 
-test("dbUpdate - update with unlnown oparator", () => {
+test("dbUpdate - update with unknown operator", () => {
   const doc: Doc = { _id: "1", val: 1 };
   // @ts-expect-error - Testing unknown operator
   const numUpdated = dbUpdate(doc, { $enlarge: { val: 2 } });

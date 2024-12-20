@@ -103,7 +103,7 @@ test("getDb findOne gets a doc", async () => {
   db.close();
 });
 
-test("getDb insers docs", async () => {
+test("getDb inserts docs", async () => {
   const db = await getDb({
     name: "foo",
     inMemory: true,
@@ -131,7 +131,7 @@ test("getDb remove one doc", async () => {
   db.close();
 });
 
-test("getDb removes multy", async () => {
+test("getDb removes multi", async () => {
   const db = await getDb({
     name: "foo",
     inMemory: true,
@@ -145,7 +145,7 @@ test("getDb removes multy", async () => {
   db.close();
 });
 
-test("getDb does not remove multy", async () => {
+test("getDb does not remove multi", async () => {
   const db = await getDb({
     name: "foo",
     inMemory: true,
@@ -174,7 +174,7 @@ test("getDb update one doc", async () => {
   db.close();
 });
 
-test("getDb updates multy", async () => {
+test("getDb updates multi", async () => {
   const db = await getDb({
     name: "foo",
     inMemory: true,
@@ -192,7 +192,7 @@ test("getDb updates multy", async () => {
   db.close();
 });
 
-test("getDb does not update multy", async () => {
+test("getDb does not update multi", async () => {
   const db = await getDb({
     name: "foo",
     inMemory: true,

@@ -72,6 +72,10 @@ test("getDb makes an inMemory DB", async () => {
   }
 });
 
-function pause(msec: number) {
-  return new Promise((resolve) => setTimeout(resolve, msec));
+/**
+ * Pause for a while.
+ * @param { number } time - time in milliseconds
+ */
+function pause(time: number) {
+  return new Promise((resolve) => setTimeout(resolve, time));
 }
