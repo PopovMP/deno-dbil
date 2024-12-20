@@ -1,11 +1,11 @@
 {
   "name": "@popov/dbil",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "exports": "./mod.ts",
   "license": "MIT",
   "imports": {
-    "@popov/file-writer": "jsr:@popov/file-writer@^1.1.3",
-    "@popov/logger": "jsr:@popov/logger@^2.0.0"
+    "@popov/file-writer": "jsr:@popov/file-writer@^1.2.0",
+    "@popov/logger": "jsr:@popov/logger@^2.1.0"
   },
   "tasks": {
     "fmt": "deno fmt .",
