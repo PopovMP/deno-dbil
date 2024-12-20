@@ -20,7 +20,7 @@ export type Value =
  *
  * - `_id`: The unique identifier of the document.
  *
- * The document conatins fields with values.
+ * The document contains fields with values.
  *
  * The filed name cannot start with `$`
  *
@@ -111,7 +111,7 @@ export interface Query {
  *
  * The `_id` field is not included by default.
  *
- * Projections accepts yether fields to include or exclude.
+ * Projections accepts either fields to include or exclude.
  */
 export interface Projection {
   _id?: 1 | 0;
