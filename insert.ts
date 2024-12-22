@@ -1,6 +1,8 @@
 import type { Doc, DocMap } from "./dbil.d.ts";
 import { logError } from "@popov/logger";
 
+const UID_LENGTH = 16;
+
 /**
  * Inserts a doc in DB
  * Returns the id of the newly inserted document or an empty string.
@@ -50,16 +52,17 @@ function insertDoc(docMap: DocMap, doc: Doc): string {
  * Makes a unique doc id.
  */
 function makeId(docMap: DocMap): string {
-  const id = uid(16);
+  const id = uid(UID_LENGTH);
   return docMap[id] === undefined ? id : makeId(docMap);
 }
 
 /**
- * Generates a random uid
+ * Generates a random URL safe uid
  */
 function uid(len: number): string {
-  const bytes = new Uint8Array(len);
+  const bytes = new Uint8Array(len * 2);
   crypto.getRandomValues(bytes);
-  const base64String = btoa(String.fromCharCode(...bytes));
-  return base64String.replace(/[+/=]/g, "").slice(0, len);
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
+    .slice(0, len);
 }
