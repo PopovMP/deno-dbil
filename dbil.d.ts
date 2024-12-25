@@ -126,8 +126,10 @@ export interface Projection {
  * - `$name`: The name of the DB. The actual file name is `${$name}.json`.
  *
  * - `$inMemory`: A boolean that indicates if the DB is in-memory.
+ *
+ *  - `$createIfNotExists`: A boolean that indicates if the DB should be created if it doesn't exist.
  */
-export interface GetDbOptions {
+export interface DbOptions {
   dirname?: string;
   name: string;
   inMemory?: boolean;
@@ -149,7 +151,7 @@ export interface DocMap {
  * - `docMap`: The map of documents in the database.
  */
 export interface DataBase {
-  options: GetDbOptions;
+  options: DbOptions;
   docMap: DocMap;
 }
 

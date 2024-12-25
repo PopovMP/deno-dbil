@@ -43,3 +43,4 @@
 
 export * from "./dbil.d.ts";
 export * from "./dbil.ts";
+export * from "./get_db.ts";
