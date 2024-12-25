@@ -7,9 +7,10 @@
  *
  * ```typescript
  * import { getDb } from "@popov/dbil";
+ * import type { DBil } from "@popov/dbil";
  *
  * const dirname = Deno.cwd() + "/db";
- * const db = getDb({ name: "test", dirname, createIfNotExists: true });
+ * const db: DBil = getDb({ name: "test", dirname, createIfNotExists: true });
  * //=> 2024-10-20 04:40:17 [INFO] [getDb] Database created: test, Records: 0
  *
  * db.insert({ name: "John", age: 25 });
@@ -34,8 +35,6 @@
  *
  * const countRemoved = db.remove({ name: "Alice" });
  * console.log(countRemoved); // 1
- *
- * db.close();
  * ```
  *
  * @module dbil

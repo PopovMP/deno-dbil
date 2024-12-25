@@ -127,7 +127,7 @@ export interface Projection {
  *
  * - `$inMemory`: A boolean that indicates if the DB is in-memory.
  *
- *  - `$createIfNotExists`: A boolean that indicates if the DB should be created if it doesn't exist.
+ * - `$createIfNotExists`: A boolean that indicates if the DB should be created if it doesn't exist.
  */
 export interface DbOptions {
   dirname?: string;
