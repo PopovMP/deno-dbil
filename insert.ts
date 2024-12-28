@@ -60,9 +60,12 @@ function makeId(docMap: DocMap): string {
  * Generates a random URL safe uid
  */
 function uid(len: number): string {
-  const bytes = new Uint8Array(len * 2);
-  crypto.getRandomValues(bytes);
-  return btoa(String.fromCharCode(...bytes))
-    .replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_")
-    .slice(0, len);
+  // noinspection SpellCheckingInspection - it's a valid alphabet
+  const alphabet =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+  const chars = [];
+  for (let i = 0; i < len; i++) {
+    chars[i] = alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return chars.join("");
 }
