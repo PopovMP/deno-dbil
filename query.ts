@@ -37,18 +37,17 @@ export function dbQuery(docMap: DocMap, query: Query): string[] {
 
 /**
  * Matches query against DB and returns the first match ID or an empty string.
- * Returns the _id of the selected doc or undefined
  */
-export function dbQueryOne(docMap: DocMap, query: Query): string | undefined {
+export function dbQueryOne(docMap: DocMap, query: Query): string {
   if (!validateQuery(query)) {
-    return undefined;
+    return "";
   }
 
   const queryKeys: string[] = Object.keys(query);
 
   // Query a single doc by _id
   if (queryKeys.length === 1 && typeof query._id === "string") {
-    return docMap[query._id] ? query._id : undefined;
+    return docMap[query._id] ? query._id : "";
   }
 
   // Query all the docs and returns the first match
@@ -58,7 +57,7 @@ export function dbQueryOne(docMap: DocMap, query: Query): string | undefined {
     }
   }
 
-  return undefined;
+  return "";
 }
 
 /**

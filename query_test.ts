@@ -28,13 +28,13 @@ test("dbQuery gets a single doc by _id", () => {
 
 test("dbQueryOne gets first _id if the query is empty", () => {
   const docMap: DocMap = getDocMap();
-  const id: string = dbQueryOne(docMap, {}) as string;
+  const id: string = dbQueryOne(docMap, {});
   strictEqual(id, "1");
 });
 
 test("dbQueryOne gets a single doc by _id", () => {
   const docMap: DocMap = getDocMap();
-  const id: string = dbQueryOne(docMap, { _id: "3" }) as string;
+  const id: string = dbQueryOne(docMap, { _id: "3" });
   strictEqual(id, "3");
 });
 
